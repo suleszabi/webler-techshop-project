@@ -1,5 +1,8 @@
 <?php
 
+    # BASE URL
+    define("BASE_URL", "http://localhost/techshop/");
+
     # Database configuration
     $db_host = "localhost";
     $db_name = "techshop";
@@ -11,6 +14,8 @@
 
     # Load Controllers
     require_once ROOT."/app/controllers/PageController.php";
+    require_once ROOT."/app/controllers/ApiController.php";
     $pageController = new PageController($db);
+    $apiController = new ApiController($db);
 
 ?>
