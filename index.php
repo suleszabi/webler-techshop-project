@@ -10,12 +10,15 @@
         case "termekek":
             $pageController->main_page();
             break;
+        case "termek":
+            $pageController->product_page();
+            break;
 
         case "api/termek-lista":
             $apiController->list_products();
             break;
         default:
-            echo "404 Controller hívás";
+            $pageController->not_found();
     }
 
 

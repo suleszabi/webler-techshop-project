@@ -15,3 +15,13 @@
     max-width: 100%;
     max-height: 240px;
 }
+
+.product-img-container.product-page {
+    height: 370px;
+    padding: 10px;
+    line-height: 350px;
+}
+
+.product-img-container.product-page img {
+    max-height: 350px;
+}

@@ -10,9 +10,7 @@
         }
 
         public function list_products() {
-            // TODO: filtering and searching
-
-            echo json_encode($this->productModel->product_list());
+            echo json_encode($this->productModel->product_list($_POST));
         }
     }
 
