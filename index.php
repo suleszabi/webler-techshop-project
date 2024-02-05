@@ -13,6 +13,9 @@
         case "termek":
             $pageController->product_page();
             break;
+        case "regisztracio":
+            $pageController->registrate();
+            break;
 
         case "api/termek-lista":
             $apiController->list_products();
