@@ -16,6 +16,18 @@
         case "regisztracio":
             $pageController->registrate();
             break;
+        case "bejelentkezes":
+            $pageController->login();
+            break;
+        case "kijelentkezes":
+            $pageController->logout();
+            break;
+        case "kosar":
+            $pageController->cart();
+            break;
+        case "kosarmuvelet":
+            $pageController->cartMethod();
+            break;
 
         case "api/termek-lista":
             $apiController->list_products();

@@ -34,6 +34,20 @@
             return ($stmt->errorCode() == "00000");
         }
 
+        public function verifyLoginData(string $login_email, string $login_password) {
+            $stmt = $this->db->prepare("SELECT * FROM `user` WHERE `email` LIKE :email");
+            $stmt->execute([":email" => $login_email]);
+            $user_data = $stmt->fetch();
+
+            if(!$user_data) { // Nincs ilyen e-mail cím
+                return false;
+            }
+
+            return ($this->hashPassword($login_password, $user_data["password_salt"]) == $user_data["password"])
+            ? $user_data : false;
+        }
+
+        # Privát belső segédfüggvények:
         private function generateSalt() {
             $char_list = "abcdefghijklmnopqrstuvwxyz0123456789";
             // $char_list[3]; // d

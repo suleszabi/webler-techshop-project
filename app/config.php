@@ -1,5 +1,8 @@
 <?php
 
+    # SESSION
+    session_start();
+
     # BASE URL
     define("BASE_URL", "http://localhost/techshop/");
 
