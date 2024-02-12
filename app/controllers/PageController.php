@@ -2,14 +2,17 @@
 
     require_once ROOT."/app/models/ProductModel.php";
     require_once ROOT."/app/models/UserModel.php";
+    require_once ROOT."/app/models/OrderModel.php";
 
     class PageController {
         private $productModel;
         private $userModel;
+        private $orderModel;
 
         public function __construct(object $db) {
             $this->productModel = new ProductModel($db);
             $this->userModel = new UserModel($db);
+            $this->orderModel = new OrderModel($db);
         }
 
         public function not_found() {
@@ -169,6 +172,7 @@
 
         public function logout() {
             unset($_SESSION["user"]);
+            unset($_SESSION["cart"]);
             header("Location: ".BASE_URL);
         }
 
@@ -177,14 +181,12 @@
                 return $this->view("cart", "Kosár", ["alert_message" => "cart_empty"]);
             }
 
-            $cart_product_list = [];
-            foreach($_SESSION["cart"] as $product_id => $qty) {
-                $product_data = $this->productModel->product_data($product_id);
-                $product_data["cart_qty"] = $qty;
-                $cart_product_list[] = $product_data;
-            }
+            $cart_data = $this->productModel->cart_data();
 
-            return $this->view("cart", "Kosár", ["cart_product_list" => $cart_product_list]);
+            return $this->view("cart", "Kosár", [
+                "cart_product_list" => $cart_data["cart_product_list"],
+                "cart_total_price" => $cart_data["cart_total_price"]
+            ]);
         }
 
         public function cartMethod() {
@@ -259,6 +261,55 @@
             header("Location: ".BASE_URL."kosar");
             return null;
 
+        }
+
+        public function order() {
+            if(!isset($_SESSION["cart"]) || !isset($_SESSION["user"])) {
+                header("Location: ".BASE_URL."kosar");
+                return null;
+            }
+
+            # Kosár adatok a megjelenítéshez
+            $cart_data = $this->productModel->cart_data();
+
+            if(!isset($_POST["order_btn"])) {
+                return $this->view("order", "Rendelés leadása", [
+                    "cart_product_list" => $cart_data["cart_product_list"],
+                    "cart_total_price" => $cart_data["cart_total_price"]
+                ]);
+            }
+
+            # Validálás
+            $error_messages = [];
+
+            if(!isset($_POST["address"]) || empty($_POST["address"])) {
+                $error_messages["address"] = "A cím megadása kötelező!";
+            } else if(mb_strlen($_POST["address"]) > 255) {
+                $error_messages["address"] = "A cím legfeljebb 255 karakter hosszú lehet!";
+            }
+
+            if(!isset($_POST["tel"]) || empty($_POST["tel"])) {
+                $error_messages["tel"] = "A telefonszám megadása kötelező!";
+            } else if(mb_strlen($_POST["tel"]) > 100) {
+                $error_messages["tel"] = "A telefonszám legfeljebb 100 karakter hosszú lehet!";
+            }
+
+            if(!empty($error_messages)) {
+                return $this->view("order", "Rendelés leadása", [
+                    "cart_product_list" => $cart_data["cart_product_list"],
+                    "cart_total_price" => $cart_data["cart_total_price"],
+                    "error_messages" => $error_messages,
+                    "old" => $_POST
+                ]);
+            }
+
+            $order = $this->orderModel->insert_order($_POST["address"], $_POST["tel"], $cart_data["cart_product_list"]);
+
+            if($order) {
+                unset($_SESSION["cart"]);
+            }
+
+            return $this->view("order", "Rendelés leadása", ["insert_order" => $order]);
         }
 
         # Privát belső segédfüggvény - helper

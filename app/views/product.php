@@ -33,6 +33,11 @@
                     </tr>
                 </table>
             </div>
+
+            <div class="text-center my-5">
+                <a href="<?=BASE_URL?>kosarmuvelet?muvelet=termek-hozzaadas&termek=<?=$product_data["id"]?>" class="btn btn-lg btn-primary">Kosárba</a>
+            </div>
+
         </div>
 
         <div class="col-12 mb-4">

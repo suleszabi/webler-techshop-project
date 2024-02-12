@@ -56,6 +56,7 @@ const getProductList = async () => {
                     </div>
                     <h4 class="mt-3">${product.formatted_price}</h4>
                     <a class="btn btn-sm btn-primary" href="${BASE_URL}termek?id=${product.id}">Adatlap</a>
+                    <a class="btn btn-sm btn-secondary" href="${BASE_URL}kosarmuvelet?muvelet=termek-hozzaadas&termek=${product.id}">Kosárba</a>
                 </div>
             </div>
         `;

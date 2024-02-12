@@ -94,6 +94,23 @@
             $stmt = $this->db->query("SELECT DISTINCT brand FROM product ORDER BY brand ASC");
             return $stmt->fetchAll();
         }
+
+        public function cart_data() {
+            $cart_product_list = [];
+            $cart_total_price = 0;
+            foreach($_SESSION["cart"] as $product_id => $qty) {
+                $product_data = $this->product_data($product_id);
+                $product_data["cart_qty"] = $qty;
+                $product_data["subtotal_price"] = number_format($product_data["price"]*$qty, 0, "", " ")." Ft";
+                $cart_product_list[] = $product_data;
+                $cart_total_price += $product_data["price"]*$qty;
+            }
+
+            return [
+                "cart_product_list" => $cart_product_list,
+                "cart_total_price" => number_format($cart_total_price, 0, "", " ")." Ft"
+            ];
+        }
     }
 
 ?>

@@ -28,6 +28,9 @@
         case "kosarmuvelet":
             $pageController->cartMethod();
             break;
+        case "rendeles":
+            $pageController->order();
+            break;
 
         case "api/termek-lista":
             $apiController->list_products();
