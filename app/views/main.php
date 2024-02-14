@@ -1,6 +1,19 @@
 <div class="container bg-light">
     <div class="row">
         <h1 class="col-12 text-center my-4"><?=$page_title?></h1>
+
+        <?php if(isset($product_delete)): ?>
+        <div class="alert alert-info p-3 col-12 col-md-6 col-xl-4 mx-auto mb-4 text-center">
+            <p class="m-0"><?=($product_delete) ? "Sikeres" : "Sikertelen"?> terméktörlés!</p>
+        </div>
+        <?php endif; ?>
+
+        <?php if(isset($_SESSION["user"]) && $_SESSION["user"]["permission"] == "admin"): ?>
+        <div class="text-start mb-3">
+            <a href="<?=BASE_URL?>uj-termek" class="btn btn-info">Új termék</a>
+        </div>
+        <?php endif; ?>
+        
     </div>
 
     <div class="row mb-4">

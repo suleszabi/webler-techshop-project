@@ -2,6 +2,10 @@
 
     class UserModel {
         private $db;
+        public $permissions = [
+            "0" => "basic",
+            "1" => "admin"
+        ];
 
         public function __construct(object $db) {
             $this->db = $db;

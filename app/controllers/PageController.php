@@ -20,10 +20,15 @@
         }
 
         public function main_page() {
-            return $this->view("main", "Termékek", [
+            $view_data = [
                 "category_list" => $this->productModel->category_list(),
                 "brand_list" => $this->productModel->brand_list()
-            ], ["main"]);
+            ];
+            if(isset($_SESSION["product_delete"])) {
+                $view_data["product_delete"] = $_SESSION["product_delete"];
+                unset($_SESSION["product_delete"]);
+            }
+            return $this->view("main", "Termékek", $view_data, ["main"]);
         }
 
         public function product_page() {
@@ -164,7 +169,8 @@
             $_SESSION["user"] = [
                 "id" => $user_data["id"],
                 "email" => $user_data["email"],
-                "full_name" => $user_data["full_name"]
+                "full_name" => $user_data["full_name"],
+                "permission" => $this->userModel->permissions[$user_data["permission"]]
             ];
 
             return $this->view("login_form", "Bejelentkezés", ["login_success" => true]);
@@ -310,6 +316,103 @@
             }
 
             return $this->view("order", "Rendelés leadása", ["insert_order" => $order]);
+        }
+
+        # Admin folyamatok
+        public function deleteProduct() {
+            if(
+                isset($_SESSION["user"]) && $_SESSION["user"]["permission"] == "admin" &&
+                isset($_GET["termek"]) && is_numeric($_GET["termek"])
+                
+            ) {
+                // "törlési" művelet csak bejelentkezett admin esetén
+                $_SESSION["product_delete"] = $this->productModel->delete($_GET["termek"]);
+            }
+
+            header("Location: ".BASE_URL);
+            return null;
+        }
+
+        public function newProduct() {
+            if(!isset($_SESSION["user"]) || $_SESSION["user"]["permission"] != "admin") {
+                header("Location: ".BASE_URL);
+                return null;
+            }
+
+            if(!isset($_POST["new_product_btn"])) {
+                return $this->view("new_product_form", "Új termék", [
+                    "category_list" => $this->productModel->category_list()
+                ]);
+            }
+
+            # Validálás
+            $error_messages = [];
+
+            if(!isset($_POST["category"]) || empty($_POST["category"])) {
+                $error_messages["category"] = "A kategória kiválasztása kötelező!";
+            } else if(!is_numeric($_POST["category"])) {
+                $error_messages["category"] = "Hibás kategória azonosító!";
+            }
+
+            if(!isset($_POST["brand"]) || empty($_POST["brand"])) {
+                $error_messages["brand"] = "A márka megadása kötelező!";
+            }
+
+            if(!isset($_POST["type"]) || empty($_POST["type"])) {
+                $error_messages["type"] = "A típus megadása kötelező!";
+            }
+
+            if(!isset($_POST["price"]) || empty($_POST["price"])) {
+                $error_messages["price"] = "Az ár megadása kötelező!";
+            } else if(!is_numeric($_POST["price"])) {
+                $error_messages["price"] = "Az ár formátuma hibás! Csak számot adj meg!";
+            }
+
+            if(!isset($_POST["description"]) || empty($_POST["description"])) {
+                $error_messages["description"] = "A leírás megadása kötelező!";
+            }
+
+            if(!empty($error_messages)) {
+                return $this->view("new_product_form", "Új termék", [
+                    "category_list" => $this->productModel->category_list(),
+                    "error_messages" => $error_messages,
+                    "old" => $_POST
+                ]);
+            }
+
+            # Fájl feltöltés / validálás
+            if(isset($_FILES["img"]["tmp_name"]) && !empty($_FILES["img"]["tmp_name"])) {
+
+                if($_FILES["img"]["type"] == "image/jpeg") {
+
+                    $img_filename = uniqid()."_".$_FILES["img"]["name"];
+                    $img_path = ROOT."/public/img/product_img/$img_filename";
+                    
+
+                    if(move_uploaded_file($_FILES["img"]["tmp_name"], $img_path)) {
+                        
+                        # Adatbázis adattárolás és visszatérés
+                        return $this->view("new_product_form", "Új termék", [
+                            "insert_success" => $this->productModel->insert(array_merge($_POST, ["img" => $img_filename]))
+                        ]);
+
+                    } else {
+                        $error_messages["img"] = "A kép tárolása során hiba lépett fel!";
+                    }
+
+                } else {
+                    $error_messages["img"] = "A kép formátuma nem JPG!";
+                }
+
+            } else {
+                $error_messages["img"] = "A fájl tallózása során hiba lépett fel!";
+            }
+
+            return $this->view("new_product_form", "Új termék", [
+                "category_list" => $this->productModel->category_list(),
+                "error_messages" => $error_messages,
+                "old" => $_POST
+            ]);
         }
 
         # Privát belső segédfüggvény - helper

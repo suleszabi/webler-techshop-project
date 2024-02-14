@@ -19,33 +19,31 @@
             product.price,
             product.img
             FROM product INNER JOIN category
-            ON product.category=category.id";
+            ON product.category=category.id
+            WHERE `status` = 1";
 
             $sql_query_filter_part = "";
             $stmt_params = [];
-            $filter_count = 0;
 
             foreach($filters as $field => $value) {
                 if(in_array($field, $this->allowed_fields)) {
-                    $sql_query_filter_part .= ($filter_count == 0) ? " WHERE " : " AND ";
                     switch($field) {
                         case "type":
-                            $sql_query_filter_part .= "product.$field LIKE :$field";
+                            $sql_query_filter_part .= " AND product.$field LIKE :$field";
                             $stmt_params[":$field"] = '%'.$value.'%';
                             break;
                         case "min_price":
-                            $sql_query_filter_part .= "product.price >= :$field";
+                            $sql_query_filter_part .= " AND product.price >= :$field";
                             $stmt_params[":$field"] = $value;
                             break;
                         case "max_price":
-                            $sql_query_filter_part .= "product.price <= :$field";
+                            $sql_query_filter_part .= " AND product.price <= :$field";
                             $stmt_params[":$field"] = $value;
                             break;
                         default:
-                            $sql_query_filter_part .= "product.$field = :$field";
+                            $sql_query_filter_part .= " AND product.$field = :$field";
                             $stmt_params[":$field"] = $value;
                     }
-                    $filter_count++;
                 }
             }
 
@@ -73,7 +71,8 @@
             product.description
             FROM product INNER JOIN category
             ON product.category=category.id
-            WHERE product.id = :product_id";
+            WHERE product.id = :product_id
+            AND `status` = 1";
             $stmt = $this->db->prepare($sql_query);
             $stmt->execute([":product_id" => $id]);
             $product_data = $stmt->fetch();
@@ -91,7 +90,7 @@
         }
 
         public function brand_list() {
-            $stmt = $this->db->query("SELECT DISTINCT brand FROM product ORDER BY brand ASC");
+            $stmt = $this->db->query("SELECT DISTINCT brand FROM product WHERE `status` = 1 ORDER BY brand ASC");
             return $stmt->fetchAll();
         }
 
@@ -110,6 +109,36 @@
                 "cart_product_list" => $cart_product_list,
                 "cart_total_price" => number_format($cart_total_price, 0, "", " ")." Ft"
             ];
+        }
+
+        # Admin folyamatok
+        public function delete(int $product_id) {
+            $stmt = $this->db->prepare("UPDATE `product` SET `status` = 0 WHERE `id` = :product_id");
+            $stmt->execute([":product_id" => $product_id]);
+            return ($stmt->errorCode() == "00000");
+        }
+
+        public function insert(array $data) {
+            $stmt = $this->db->prepare("INSERT INTO product(category, brand, type, price, description, img)
+            VALUES (:category, :brand, :type, :price, :description, :img)");
+
+            $category = $data["category"];
+            $brand = $data["brand"];
+            $type = $data["type"];
+            $price = $data["price"];
+            $description = $data["description"];
+            $img = $data["img"];
+            
+            $stmt->execute([
+                ":category" => $category,
+                ":brand" => $brand,
+                ":type" => $type,
+                ":price" => $price,
+                ":description" => $description,
+                ":img" => $img,
+            ]);
+
+            return ($stmt->errorCode() == "00000");
         }
     }
 

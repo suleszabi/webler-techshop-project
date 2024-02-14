@@ -41,6 +41,10 @@ const getProductList = async () => {
     let product_list_html = "";
 
     for(let product of product_list) {
+        let admin_btn = (USER_PERMISSION == "admin") ? 
+        `<a class="btn btn-sm btn-info" href="${BASE_URL}termek-torles?termek=${product.id}">Törlés</a>`
+        :
+        "";
         product_list_html += `
             <div class="col-12 col-md-6 col-xl-4 mb-4">
                 <div class="bg-white shadow-sm p-3 text-center">
@@ -57,6 +61,7 @@ const getProductList = async () => {
                     <h4 class="mt-3">${product.formatted_price}</h4>
                     <a class="btn btn-sm btn-primary" href="${BASE_URL}termek?id=${product.id}">Adatlap</a>
                     <a class="btn btn-sm btn-secondary" href="${BASE_URL}kosarmuvelet?muvelet=termek-hozzaadas&termek=${product.id}">Kosárba</a>
+                    ${admin_btn}
                 </div>
             </div>
         `;

@@ -31,7 +31,16 @@
         case "rendeles":
             $pageController->order();
             break;
+        
+        // Admin route-ok
+        case "termek-torles":
+            $pageController->deleteProduct();
+            break;
+        case "uj-termek":
+            $pageController->newProduct();
+            break;
 
+        // API route-ok
         case "api/termek-lista":
             $apiController->list_products();
             break;

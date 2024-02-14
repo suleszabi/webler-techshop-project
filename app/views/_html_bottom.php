@@ -3,6 +3,7 @@
 
     <script>
         const BASE_URL = "<?=BASE_URL?>";
+        const USER_PERMISSION = "<?=isset($_SESSION["user"]) ? $_SESSION["user"]["permission"] : "none"?>";
     </script>
 
     <?php foreach($js_scripts as $script_name): ?>
